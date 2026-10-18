@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "369387270357",
+    "project_id": "steppaydatabase",
+    "storage_bucket": "steppaydatabase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:369387270357:android:52b90cc5488079201c325c",
+        "android_client_info": {
+          "package_name": "com.steppay.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "369387270357-klec6rotrbqcn63tna301ark5c8rop5b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.steppay.app",
+            "certificate_hash": "99a691c83a14fc5aae4600c550cdfec7f0da75be"
+          }
+        },
+        {
+          "client_id": "369387270357-fp6qm4illvk0roa7jct88easct6r17sb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgBu_hJJ8Cpao2zplbHWUAX67iLUVIj4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "369387270357-fp6qm4illvk0roa7jct88easct6r17sb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

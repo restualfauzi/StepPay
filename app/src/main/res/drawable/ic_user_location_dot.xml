@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+
+    <!-- Outer Light Blue Halo Ring -->
+    <path
+        android:pathData="M18,18 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0"
+        android:fillColor="#33007AFF" />
+
+    <!-- White Ring / Border -->
+    <path
+        android:pathData="M18,18 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Inner Solid Blue Dot -->
+    <path
+        android:pathData="M18,18 m-8,0 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0"
+        android:fillColor="#007AFF" />
+</vector>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="166dp"
+    android:viewportWidth="240"
+    android:viewportHeight="200">
+
+    <!-- Background Accent Circle -->
+    <path
+        android:pathData="M120,100 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0"
+        android:fillColor="#E0F2FE" />
+
+    <!-- Motion / Speed Lines -->
+    <path
+        android:pathData="M30,80 L60,80 M20,100 L50,100 M35,120 L65,120"
+        android:strokeColor="#93C5FD"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+
+    <!-- Runner Figure -->
+    <!-- Head -->
+    <path
+        android:pathData="M145,45 m-12,0 a12,12 0 1,0 24,0 a12,12 0 1,0 -24,0"
+        android:fillColor="#1E293B" />
+
+    <!-- Torso -->
+    <path
+        android:pathData="M140,58 L125,95 L110,120"
+        android:strokeColor="#2563EB"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Arms -->
+    <!-- Front Arm -->
+    <path
+        android:pathData="M137,68 L160,80 L175,70"
+        android:strokeColor="#10B981"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Back Arm -->
+    <path
+        android:pathData="M137,68 L120,82 L105,78"
+        android:strokeColor="#1E293B"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Legs -->
+    <!-- Front Leg -->
+    <path
+        android:pathData="M125,95 L150,120 L175,120"
+        android:strokeColor="#2563EB"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Back Leg -->
+    <path
+        android:pathData="M125,95 L100,115 L80,140"
+        android:strokeColor="#1E293B"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Ground / Path Curve -->
+    <path
+        android:pathData="M30,165 Q120,145 210,165"
+        android:strokeColor="#2563EB"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+
+    <!-- Floating Coins / Sparkles -->
+    <!-- Coin 1 -->
+    <path
+        android:pathData="M185,50 m-10,0 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+        android:fillColor="#F59E0B" />
+    <path
+        android:pathData="M185,46 L185,54 M182,50 L188,50"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round" />
+
+    <!-- Coin 2 -->
+    <path
+        android:pathData="M205,85 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0"
+        android:fillColor="#FBBF24" />
+
+    <!-- Star / Sparkle -->
+    <path
+        android:pathData="M75,45 L78,52 L85,55 L78,58 L75,65 L72,58 L65,55 L72,52 Z"
+        android:fillColor="#F59E0B" />
+</vector>

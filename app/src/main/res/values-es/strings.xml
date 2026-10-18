@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">StepPay</string>
+    <string name="app_tagline">Camina, corre y gana recompensas</string>
+
+    <string name="nav_home">Inicio</string>
+    <string name="nav_activity">Actividad</string>
+    <string name="nav_rewards">Recompensas</string>
+    <string name="nav_profile">Perfil</string>
+    <string name="nav_history">Historial</string>
+    <string name="nav_leaderboard">Clasificación</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_info">Info y Ayuda</string>
+
+    <string name="greeting_user">Hola, %1$s 👋</string>
+    <string name="greeting_subtitle">¡Sigue moviéndote, cada paso cuenta!</string>
+    <string name="total_coins">Monedas Totales</string>
+    <string name="approx_value">≈ %1$s</string>
+    <string name="daily_goal">Meta Diaria</string>
+    <string name="steps_unit">pasos</string>
+    <string name="steps_remaining">quedan %1$s pasos</string>
+    <string name="start_now">Empezar a Caminar</string>
+    <string name="shortcut_rewards">Premios</string>
+    <string name="shortcut_withdraw">Cobrar</string>
+    <string name="shortcut_leaderboard">Tabla</string>
+    <string name="shortcut_info">Info</string>
+
+    <string name="tracking_title">Seguimiento Activo</string>
+    <string name="walking">Caminando</string>
+    <string name="running">Corriendo</string>
+    <string name="steps">Pasos</string>
+    <string name="distance">Distancia</string>
+    <string name="time">Tiempo</string>
+    <string name="calories">Calorías</string>
+    <string name="pause">Pausa</string>
+    <string name="resume">Continuar</string>
+    <string name="finish">Finalizar</string>
+    <string name="lock">Bloquear</string>
+    <string name="unlock">Desbloquear</string>
+    <string name="finish_dialog_title">¿Completar Entrenamiento?</string>
+    <string name="finish_dialog_msg">¿Deseas finalizar y guardar esta sesión de entrenamiento?</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar Entrenamiento</string>
+
+    <string name="settings_title">Ajustes y Preferencias</string>
+    <string name="user_profile">Perfil de Usuario</string>
+    <string name="user_name_label">Nombre de Usuario</string>
+    <string name="daily_target_label">Meta Diaria de Pasos</string>
+    <string name="app_preferences">Preferencias de la Aplicación</string>
+    <string name="language_label">Idioma de la Aplicación</string>
+    <string name="country_label">País / Región</string>
+    <string name="distance_unit_label">Unidad de Distancia</string>
+    <string name="save_changes">Guardar Cambios</string>
+    <string name="preferences_saved">¡Ajustes actualizados correctamente!</string>
+
+    <string name="rewards_title">Recompensas y Pagos</string>
+    <string name="payout_title">Solicitar Pago</string>
+    <string name="payout_method">Método de Pago</string>
+    <string name="payout_not_configured">El servicio de pago no está configurado aún para tu región.</string>
+    <string name="payout_account_label">Cuenta / Correo de Destino</string>
+    <string name="payout_submit">Enviar Solicitud de Pago</string>
+    <string name="payout_success">¡Solicitud de pago enviada para procesamiento!</string>
+    <string name="payout_insufficient_coins">Monedas insuficientes para esta solicitud de pago.</string>
+    <string name="watch_ad_bonus">Ver Anuncio (+50 Monedas)</string>
+</resources>

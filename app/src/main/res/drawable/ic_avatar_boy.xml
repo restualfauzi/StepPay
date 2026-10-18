@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Circle background light blue -->
+    <path
+        android:pathData="M48,48 m-48,0 a48,48 0 1,0 96,0 a48,48 0 1,0 -96,0"
+        android:fillColor="#E0F2FE" />
+
+    <!-- Shoulders / Shirt -->
+    <path
+        android:pathData="M20,86 C20,70 32,60 48,60 C64,60 76,70 76,86 Z"
+        android:fillColor="#0284C7" />
+
+    <!-- Head / Face Skin Tone -->
+    <path
+        android:pathData="M48,22 C37,22 28,31 28,42 C28,53 37,60 48,60 C59,60 68,53 68,42 C68,31 59,22 48,22 Z"
+        android:fillColor="#FDE047" />
+
+    <!-- Dark Hair -->
+    <path
+        android:pathData="M30,34 C30,22 40,16 48,16 C56,16 66,22 66,34 C64,28 58,22 48,22 C38,22 32,28 30,34 Z"
+        android:fillColor="#1E293B" />
+
+    <!-- Eyes -->
+    <path
+        android:pathData="M40,38 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#1E293B" />
+    <path
+        android:pathData="M56,38 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0"
+        android:fillColor="#1E293B" />
+
+    <!-- Smile -->
+    <path
+        android:pathData="M42,48 Q48,54 54,48"
+        android:strokeColor="#1E293B"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round" />
+</vector>
