@@ -107,11 +107,23 @@ object AdManager {
         )
     }
 
-    fun showInterstitialAd(activity: Activity) {
+    fun showInterstitialAd(activity: Activity, onAdDismissed: (() -> Unit)? = null) {
         interstitialAd?.let { ad ->
+            ad.fullScreenContentCallback = object : com.google.android.gms.ads.FullScreenContentCallback() {
+                override fun onAdDismissedFullScreenContent() {
+                    interstitialAd = null
+                    loadInterstitialAd(activity)
+                    onAdDismissed?.invoke()
+                }
+                
+                override fun onAdFailedToShowFullScreenContent(p0: com.google.android.gms.ads.AdError) {
+                    interstitialAd = null
+                    onAdDismissed?.invoke()
+                }
+            }
             ad.show(activity)
-            interstitialAd = null
-            loadInterstitialAd(activity)
+        } ?: run {
+            onAdDismissed?.invoke()
         }
     }
 

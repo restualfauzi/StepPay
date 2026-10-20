@@ -19,6 +19,9 @@ class StepPayApplication : Application(), ImageLoaderFactory {
         super.onCreate()
         createNotificationChannels()
 
+        // Schedule daily recurring reminder notification
+        com.steppay.app.worker.DailyReminderScheduler.scheduleDailyReminder(this)
+
         // Initialize Mobile Ads SDK asynchronously
         CoroutineScope(Dispatchers.IO).launch {
             MobileAds.initialize(this@StepPayApplication)
@@ -52,12 +55,22 @@ class StepPayApplication : Application(), ImageLoaderFactory {
                 description = "Active notification while step and GPS route tracking is running"
             }
 
+            val reminderChannel = NotificationChannel(
+                DAILY_REMINDER_CHANNEL_ID,
+                "StepPay Daily Reminders",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Daily reminders to walk, earn coins, and keep your login streak active"
+            }
+
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager?.createNotificationChannel(trackingChannel)
+            notificationManager?.createNotificationChannel(reminderChannel)
         }
     }
 
     companion object {
         const val TRACKING_CHANNEL_ID = "steppay_tracking_channel"
+        const val DAILY_REMINDER_CHANNEL_ID = "steppay_daily_reminder_channel"
     }
 }

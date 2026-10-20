@@ -118,7 +118,7 @@ fun CoinBalanceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.approx_value, "USD ${(totalCoins / 10000.0).let { String.format(Locale.getDefault(), "%.2f", it) }}"),
+                    text = stringResource(R.string.approx_value, "USD ${(totalCoins / 100000.0).let { String.format(Locale.getDefault(), "%.2f", it) }}"),
                     fontSize = 13.sp,
                     color = SecondaryText,
                     fontWeight = FontWeight.Medium
@@ -131,7 +131,7 @@ fun CoinBalanceCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "$1 = 10.000 Coins",
+                        text = "$1 = 100K Coins",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = com.steppay.app.ui.theme.WarningOrange

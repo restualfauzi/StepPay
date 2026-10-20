@@ -43,6 +43,11 @@ object FirestoreSyncManager {
                 val rupiahBalance = (snapshot.getLong("rupiahBalance") ?: 0L).toInt()
                 val paymentMethod = snapshot.getString("paymentMethod") ?: "PayPal"
                 val paymentAccount = snapshot.getString("paymentAccount") ?: email
+                val referralCode = snapshot.getString("referralCode") ?: ""
+                val referredBy = snapshot.getString("referredBy") ?: ""
+                val shoeLevel = (snapshot.getLong("shoeLevel") ?: 1L).toInt()
+                val waterGlasses = (snapshot.getLong("waterGlasses") ?: 0L).toInt()
+                val lastWaterResetDate = snapshot.getString("lastWaterResetDate") ?: ""
 
                 val updatedProfile = UserProfileEntity(
                     id = 1,
@@ -57,7 +62,12 @@ object FirestoreSyncManager {
                     rupiahBalance = rupiahBalance,
                     paymentMethod = paymentMethod,
                     paymentAccount = paymentAccount,
-                    checksum = ""
+                    checksum = "",
+                    referralCode = referralCode,
+                    referredBy = referredBy,
+                    shoeLevel = shoeLevel,
+                    waterGlasses = waterGlasses,
+                    lastWaterResetDate = lastWaterResetDate
                 )
                 onProfileUpdated(updatedProfile)
             }
@@ -81,6 +91,11 @@ object FirestoreSyncManager {
                     rupiahBalance = (doc.getLong("rupiahBalance") ?: 0L).toInt(),
                     paymentMethod = doc.getString("paymentMethod") ?: "PayPal",
                     paymentAccount = doc.getString("paymentAccount") ?: email,
+                    referralCode = doc.getString("referralCode") ?: "",
+                    referredBy = doc.getString("referredBy") ?: "",
+                    shoeLevel = (doc.getLong("shoeLevel") ?: 1L).toInt(),
+                    waterGlasses = (doc.getLong("waterGlasses") ?: 0L).toInt(),
+                    lastWaterResetDate = doc.getString("lastWaterResetDate") ?: "",
                     checksum = ""
                 )
             } else null
@@ -133,6 +148,11 @@ object FirestoreSyncManager {
             "rupiahBalance" to profile.rupiahBalance,
             "paymentMethod" to profile.paymentMethod,
             "paymentAccount" to profile.paymentAccount,
+            "referralCode" to profile.referralCode,
+            "referredBy" to profile.referredBy,
+            "shoeLevel" to profile.shoeLevel,
+            "waterGlasses" to profile.waterGlasses,
+            "lastWaterResetDate" to profile.lastWaterResetDate,
             "lastUpdated" to System.currentTimeMillis()
         )
 
@@ -213,4 +233,31 @@ object FirestoreSyncManager {
             .document(withdrawal.transactionNumber)
             .set(withdrawalMap, SetOptions.merge())
     }
+
+    fun listenToLiveLeaderboard(onLeaderboardUpdated: (List<LeaderboardUserDto>) -> Unit): ListenerRegistration {
+        return firestore.collection("users")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+                val userList = snapshot.documents.mapNotNull { doc ->
+                    val name = doc.getString("name") ?: doc.getString("userName") ?: "User"
+                    val email = doc.getString("email") ?: doc.id
+                    val photoUrl = doc.getString("photoUrl") ?: ""
+                    val steps = (doc.getLong("todaySteps") ?: doc.getLong("steps") ?: 0L).toInt()
+                    LeaderboardUserDto(
+                        email = email,
+                        name = name,
+                        photoUrl = photoUrl,
+                        steps = steps
+                    )
+                }
+                onLeaderboardUpdated(userList)
+            }
+    }
 }
+
+data class LeaderboardUserDto(
+    val email: String,
+    val name: String,
+    val photoUrl: String,
+    val steps: Int
+)

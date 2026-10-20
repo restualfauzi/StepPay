@@ -16,4 +16,8 @@ sealed class Screen(val route: String) {
     data object Settings : Screen("settings")
     data object PrivacyPolicy : Screen("privacy_policy")
     data object TermsOfService : Screen("terms_of_service")
+    data object LuckySpin : Screen("lucky_spin")
+    data object Achievements : Screen("achievements")
+    data object Sneakers : Screen("sneakers")
+    data object InviteFriends : Screen("invite_friends")
 }

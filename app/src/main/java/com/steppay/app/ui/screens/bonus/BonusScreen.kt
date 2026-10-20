@@ -88,13 +88,13 @@ data class StepMilestone(
 )
 
 val stepMilestones = listOf(
-    StepMilestone(1, 50, 10, 20, "50 Steps Goal"),
-    StepMilestone(2, 200, 20, 40, "200 Steps Goal"),
-    StepMilestone(3, 500, 30, 60, "500 Steps Goal"),
-    StepMilestone(4, 1000, 50, 100, "1,000 Steps Goal"),
-    StepMilestone(5, 2500, 100, 200, "2,500 Steps Goal"),
-    StepMilestone(6, 5000, 200, 400, "5,000 Steps Goal"),
-    StepMilestone(7, 10000, 500, 1000, "10,000 Steps Goal")
+    StepMilestone(1, 50, 50, 100, "50 Steps Goal"),
+    StepMilestone(2, 200, 100, 200, "200 Steps Goal"),
+    StepMilestone(3, 500, 150, 300, "500 Steps Goal"),
+    StepMilestone(4, 1000, 250, 500, "1,000 Steps Goal"),
+    StepMilestone(5, 2500, 500, 1000, "2,500 Steps Goal"),
+    StepMilestone(6, 5000, 1000, 2000, "5,000 Steps Goal"),
+    StepMilestone(7, 10000, 2000, 4000, "10,000 Steps Goal")
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -112,9 +112,14 @@ fun BonusScreen(
 
     var localClaimedTasks by remember { mutableStateOf(setOf<String>()) }
 
+    fun isToday(timestamp: Long): Boolean {
+        val fmt = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        return fmt.format(java.util.Date(timestamp)) == fmt.format(java.util.Date())
+    }
+
     fun isTaskClaimed(taskName: String): Boolean {
         return localClaimedTasks.contains(taskName) ||
-                allTransactions.any { it.title.contains(taskName, ignoreCase = true) }
+                allTransactions.any { isToday(it.timestamp) && it.title.contains(taskName, ignoreCase = true) }
     }
 
     fun triggerMissionWithAd(
@@ -206,7 +211,7 @@ fun BonusScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
                         .clickable {
-                            Toast.makeText(context, "Coming Soon: Lucky Spin Wheel!", Toast.LENGTH_SHORT).show()
+                            onNavigate(Screen.LuckySpin)
                         },
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -225,13 +230,13 @@ fun BonusScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "Spin Wheel",
+                            text = "Lucky Spin",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = PrimaryText
                         )
                         Text(
-                            text = "Win 1000 Coins",
+                            text = "Win up to 200 Coins",
                             fontSize = 11.sp,
                             color = PrimaryBlue
                         )
@@ -246,7 +251,7 @@ fun BonusScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
                         .clickable {
-                            Toast.makeText(context, "Coming Soon: Invite Friends!", Toast.LENGTH_SHORT).show()
+                            onNavigate(Screen.InviteFriends)
                         },
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -271,7 +276,7 @@ fun BonusScreen(
                             color = PrimaryText
                         )
                         Text(
-                            text = "+1000/Friend",
+                            text = "+10000/Friend",
                             fontSize = 11.sp,
                             color = PrimaryBlue
                         )
@@ -745,8 +750,12 @@ fun BonusScreen(
                 }
             }
 
-            // 2. Watch Ad Card
-            val isWatchAdClaimed = isTaskClaimed("Watch Video Ad") || isTaskClaimed("Ad Video Bonus")
+            // 2. Watch Rewarded Ads Card (Up to 10 Ads per day)
+            val watchAdCountToday = allTransactions.count {
+                isToday(it.timestamp) && (it.title.contains("Watch Video Ad", ignoreCase = true) || it.title.contains("Rewarded Ad", ignoreCase = true))
+            }
+            val isMaxAdCountReached = watchAdCountToday >= 10
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -781,13 +790,13 @@ fun BonusScreen(
 
                         Column {
                             Text(
-                                text = "Watch Short Video",
+                                text = "Watch Rewarded Ads",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrimaryText
                             )
                             Text(
-                                text = if (isWatchAdClaimed) "Task Completed Today" else "Instant +100 Coins Bonus",
+                                text = if (isMaxAdCountReached) "Daily Limit Reached (10/10)" else "Earn +200 Coins per Ad ($watchAdCountToday/10 Today)",
                                 fontSize = 12.sp,
                                 color = SecondaryText
                             )
@@ -796,18 +805,18 @@ fun BonusScreen(
 
                     Button(
                         onClick = {
-                            if (isWatchAdClaimed) return@Button
-                            localClaimedTasks = localClaimedTasks + "Watch Video Ad"
+                            if (isMaxAdCountReached) return@Button
+                            val nextAdIndex = watchAdCountToday + 1
                             triggerMissionWithAd(
                                 is2xReward = true,
-                                rewardAmount = 100,
-                                missionTitle = "Watch Video Ad",
-                                missionSubtitle = "Ad Video (+100)"
+                                rewardAmount = 200,
+                                missionTitle = "Watch Video Ad #$nextAdIndex",
+                                missionSubtitle = "Rewarded Ad (+200)"
                             ) {
-                                Toast.makeText(context, "Congratulations! You earned +100 Coins!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Earned +200 Coins! ($nextAdIndex/10)", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        enabled = !isWatchAdClaimed,
+                        enabled = !isMaxAdCountReached,
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryBlue,
@@ -815,8 +824,8 @@ fun BonusScreen(
                         )
                     ) {
                         Text(
-                            text = if (isWatchAdClaimed) "Claimed ✓" else "+100",
-                            color = if (isWatchAdClaimed) SecondaryText else SurfaceWhite,
+                            text = if (isMaxAdCountReached) "Done ✓" else "$watchAdCountToday/10",
+                            color = if (isMaxAdCountReached) SecondaryText else SurfaceWhite,
                             fontWeight = FontWeight.Bold
                         )
                     }

@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.steppay.app.R
+import com.steppay.app.domain.model.LeaderboardUser
 import com.steppay.app.ui.StepPayViewModel
 import com.steppay.app.ui.components.StepPayTopBar
 import com.steppay.app.ui.theme.BackgroundLight
@@ -52,14 +53,6 @@ import com.steppay.app.ui.theme.SoftBlueBg
 import com.steppay.app.ui.theme.SurfaceWhite
 import java.util.Locale
 
-data class LeaderboardUser(
-    val rank: Int,
-    val name: String,
-    val steps: Int,
-    val isCurrentUser: Boolean = false,
-    val photoUrl: String? = null
-)
-
 @Composable
 fun LeaderboardScreen(
     viewModel: StepPayViewModel,
@@ -67,41 +60,46 @@ fun LeaderboardScreen(
 ) {
     val userProfile by viewModel.userProfile.collectAsState()
     val allSessions by viewModel.allSessions.collectAsState()
+    val liveLeaderboardData by viewModel.liveLeaderboard.collectAsState()
 
     val currentSteps = userProfile?.todaySteps ?: 0
     val currentUserName = userProfile?.name ?: "You"
     val currentUserPhoto = userProfile?.photoUrl
 
-    // Build real-time leaderboard list from live database & active step tracking
-    val leaderboardData = remember(currentSteps, currentUserName, currentUserPhoto, allSessions) {
-        val userList = mutableListOf(
-            LeaderboardUser(
-                rank = 1,
-                name = currentUserName,
-                steps = currentSteps,
-                isCurrentUser = true,
-                photoUrl = currentUserPhoto
-            )
-        )
-
-        // Add real recorded workout sessions from database
-        allSessions.groupBy { it.id }.forEach { (sessionId, sessions) ->
-            val sessionSteps = sessions.sumOf { it.steps }
-            if (sessionSteps > 0 && sessionSteps != currentSteps) {
-                userList.add(
-                    LeaderboardUser(
-                        rank = 0,
-                        name = "Runner #$sessionId",
-                        steps = sessionSteps,
-                        isCurrentUser = false
-                    )
+    // Build real-time leaderboard list from Firestore live data or fallback local list
+    val leaderboardData = remember(liveLeaderboardData, currentSteps, currentUserName, currentUserPhoto, allSessions) {
+        if (liveLeaderboardData.isNotEmpty()) {
+            liveLeaderboardData
+        } else {
+            val userList = mutableListOf(
+                LeaderboardUser(
+                    rank = 1,
+                    name = currentUserName,
+                    steps = currentSteps,
+                    isCurrentUser = true,
+                    photoUrl = currentUserPhoto
                 )
-            }
-        }
+            )
 
-        // Sort by steps descending and assign real-time ranks
-        userList.sortedByDescending { it.steps }.mapIndexed { index, user ->
-            user.copy(rank = index + 1)
+            // Add real recorded workout sessions from database
+            allSessions.groupBy { it.id }.forEach { (sessionId, sessions) ->
+                val sessionSteps = sessions.sumOf { it.steps }
+                if (sessionSteps > 0 && sessionSteps != currentSteps) {
+                    userList.add(
+                        LeaderboardUser(
+                            rank = 0,
+                            name = "Runner #$sessionId",
+                            steps = sessionSteps,
+                            isCurrentUser = false
+                        )
+                    )
+                }
+            }
+
+            // Sort by steps descending and assign real-time ranks
+            userList.sortedByDescending { it.steps }.mapIndexed { index, user ->
+                user.copy(rank = index + 1)
+            }
         }
     }
 

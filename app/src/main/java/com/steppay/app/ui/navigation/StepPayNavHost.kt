@@ -38,7 +38,6 @@ fun StepPayNavHost(
     viewModel: StepPayViewModel
 ) {
     val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
-    val userProfile by viewModel.userProfile.collectAsState()
     var selectedRewardItem by remember { mutableStateOf<RewardItem?>(null) }
 
     NavHost(
@@ -124,6 +123,42 @@ fun StepPayNavHost(
                 }
             )
         }
+        
+        composable(Screen.LuckySpin.route) {
+            com.steppay.app.ui.screens.bonus.LuckySpinScreen(
+                viewModel = viewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Achievements.route) {
+            com.steppay.app.ui.screens.profile.AchievementsScreen(
+                viewModel = viewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.Sneakers.route) {
+            com.steppay.app.ui.screens.profile.SneakersScreen(
+                viewModel = viewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.InviteFriends.route) {
+            com.steppay.app.ui.screens.profile.InviteFriendsScreen(
+                viewModel = viewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
 
         composable(Screen.Rewards.route) {
             RewardsScreen(
@@ -142,7 +177,7 @@ fun StepPayNavHost(
 
         composable(Screen.Withdrawal.route) {
             val reward = selectedRewardItem
-            val initialAmountDollars = if (reward != null && reward.coinCost >= 10000) reward.coinCost / 10000 else 1
+            val initialAmountDollars = if (reward != null && reward.coinCost >= 100000) reward.coinCost / 100000 else 1
             WithdrawalScreen(
                 viewModel = viewModel,
                 onBackClick = {
@@ -205,7 +240,7 @@ fun StepPayNavHost(
             SplashScreen(
                 onSplashFinished = {
                     val firebaseUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-                    val isUserLoggedIn = isOnboardingCompleted == true || userProfile != null || firebaseUser != null
+                    val isUserLoggedIn = isOnboardingCompleted == true && firebaseUser != null
                     val destination = if (isUserLoggedIn) Screen.Home.route else Screen.Onboarding.route
                     navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }

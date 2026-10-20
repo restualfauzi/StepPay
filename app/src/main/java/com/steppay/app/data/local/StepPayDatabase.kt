@@ -20,7 +20,7 @@ import com.steppay.app.data.local.entity.WithdrawalEntity
         WithdrawalEntity::class,
         UserProfileEntity::class,
     ],
-    version = 3,
+    version = 6,
     exportSchema = false,
 )
 abstract class StepPayDatabase : RoomDatabase() {

@@ -69,6 +69,7 @@ class StepPayRepository(context: Context) {
 
             if (currentProfile == null) {
                 val memId = "SP${System.currentTimeMillis().toString().takeLast(8)}"
+                val generatedReferral = "SP" + java.util.UUID.randomUUID().toString().take(6).uppercase()
                 val initialProfile = UserProfileEntity(
                     id = 1,
                     name = firebaseUser?.displayName ?: "New User",
@@ -82,7 +83,12 @@ class StepPayRepository(context: Context) {
                     rupiahBalance = 0,
                     paymentMethod = "PayPal",
                     paymentAccount = email.ifBlank { "user@paypal.com" },
-                    checksum = SecurityManager.calculateCoinChecksum(memId, 0, 0)
+                    checksum = SecurityManager.calculateCoinChecksum(memId, 0, 0),
+                    referralCode = generatedReferral,
+                    referredBy = "",
+                    shoeLevel = 1,
+                    waterGlasses = 0,
+                    lastWaterResetDate = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
                 )
                 userProfileDao.insertOrUpdateProfile(initialProfile)
                 if (email.isNotBlank()) {
@@ -146,6 +152,73 @@ class StepPayRepository(context: Context) {
             FirestoreSyncManager.syncActivitySession(session, updatedProfile)
         }
         return id
+    }
+
+    suspend fun saveTransaction(title: String, subtitle: String, amountCoins: Int, isPositive: Boolean, category: String) {
+        if (isPositive) {
+            userProfileDao.addCoins(amountCoins)
+        } else {
+            userProfileDao.deductCoins(amountCoins)
+        }
+        val tx = CoinTransactionEntity(
+            title = title,
+            subtitle = subtitle,
+            amountCoins = amountCoins,
+            isPositive = isPositive,
+            category = category
+        )
+        transactionDao.insertTransaction(tx)
+        syncAndSignProfile()
+        val profile = userProfileDao.getUserProfile().first()
+        FirestoreSyncManager.syncTransaction(tx, profile)
+    }
+
+    suspend fun updateReferredBy(referralCode: String) {
+        val currentProfile = userProfileDao.getUserProfile().first() ?: return
+        userProfileDao.insertOrUpdateProfile(currentProfile.copy(referredBy = referralCode))
+        syncAndSignProfile()
+    }
+
+    suspend fun upgradeShoeLevel(cost: Int, newLevel: Int) {
+        val currentProfile = userProfileDao.getUserProfile().first() ?: return
+        if (currentProfile.totalCoins >= cost) {
+            userProfileDao.deductCoins(cost)
+            val tx = CoinTransactionEntity(
+                title = "Sneakers Upgrade",
+                subtitle = "Upgraded to Level $newLevel",
+                amountCoins = cost,
+                isPositive = false,
+                category = "SHOP"
+            )
+            transactionDao.insertTransaction(tx)
+            userProfileDao.insertOrUpdateProfile(currentProfile.copy(totalCoins = currentProfile.totalCoins - cost, shoeLevel = newLevel))
+            syncAndSignProfile()
+            val profile = userProfileDao.getUserProfile().first()
+            FirestoreSyncManager.syncTransaction(tx, profile)
+        }
+    }
+
+    suspend fun drinkWater() {
+        val currentProfile = userProfileDao.getUserProfile().first() ?: return
+        val todayStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+        
+        var currentGlasses = currentProfile.waterGlasses
+        if (currentProfile.lastWaterResetDate != todayStr) {
+            // New day, reset
+            currentGlasses = 0
+        }
+        
+        if (currentGlasses < 8) {
+            currentGlasses++
+            val updated = currentProfile.copy(waterGlasses = currentGlasses, lastWaterResetDate = todayStr)
+            userProfileDao.insertOrUpdateProfile(updated)
+            syncAndSignProfile()
+            
+            // Give reward if 8 glasses reached
+            if (currentGlasses == 8) {
+                claimBonusCoins(500, "Hydration Master", "Drank 8 glasses of water today!")
+            }
+        }
     }
 
     suspend fun claimBonusCoins(coins: Int, title: String, subtitle: String) {

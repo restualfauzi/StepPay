@@ -180,7 +180,7 @@ fun WithdrawalScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     nominalOptions.forEach { amount ->
-                        val coinCost = amount * 10000
+                        val coinCost = amount * 100000
                         NominalCard(
                             amount = amount,
                             coinCost = coinCost,
@@ -199,8 +199,13 @@ fun WithdrawalScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                PrimaryButton(
-                    text = stringResource(R.string.payout_submit),
+                val totalCost = selectedAmount * 100000
+                val totalBalanceCoins = userProfile?.totalCoins ?: 0
+                val hasEnoughCoins = totalBalanceCoins >= totalCost
+                
+                com.steppay.app.ui.components.PrimaryButton(
+                    text = "Withdraw $$selectedAmount",
+                    enabled = hasEnoughCoins,
                     onClick = { showConfirmDialog = true }
                 )
 

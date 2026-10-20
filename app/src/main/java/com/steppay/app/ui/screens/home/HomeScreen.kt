@@ -1,5 +1,6 @@
 package com.steppay.app.ui.screens.home
 
+import android.app.Activity
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
@@ -33,6 +34,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.LocalContext
+import com.steppay.app.ads.AdManager
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -78,7 +81,9 @@ fun HomeScreen(
     viewModel: StepPayViewModel,
     onNavigate: (Screen) -> Unit
 ) {
+    val context = LocalContext.current
     val userProfile by viewModel.userProfile.collectAsState()
+    val liveLeaderboard by viewModel.liveLeaderboard.collectAsState()
 
     val totalCoins = userProfile?.totalCoins ?: 0
     val rupiahValue = RewardEngine.calculateRupiahValue(totalCoins)
@@ -303,12 +308,24 @@ fun HomeScreen(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        val tickerText = remember(totalCoins, userProfile?.name) {
+                        val tickerText = remember(totalCoins, userProfile?.name, liveLeaderboard) {
                             val formattedCoins = String.format(Locale.getDefault(), "%,d", totalCoins).replace(',', '.')
-                            val usdVal = String.format(Locale.US, "%.2f", totalCoins / 10000.0)
-                            val rawName = userProfile?.name ?: "Restu"
+                            val usdVal = String.format(Locale.US, "%.2f", totalCoins / 100000.0)
+                            val rawName = userProfile?.name ?: "User"
                             val maskedUser = maskUserName(rawName)
-                            "      💰 Total Earned: $formattedCoins Coins (≈ $$usdVal USD)  •  ⚡ Rate: $1.00 USD = 10,000 Coins  •  🎉 @$maskedUser earned $formattedCoins Coins!  •  💵 @B**** just cashed out $5.00 via PayPal!  •  🏃 @S**** earned +150 Coins from Walking!  •  🎁 Complete Tapjoy & Daily Tasks for up to 50,000 Coins!  •  👟 Keep walking & convert your steps into real cash!      "
+
+                            // Build live active users text from Firestore
+                            val firestoreActiveUsers = liveLeaderboard
+                                .filter { !it.isCurrentUser && it.steps > 0 }
+                                .take(4)
+                                .joinToString("  •  ") { user ->
+                                    val masked = maskUserName(user.name.replace(" (You)", ""))
+                                    "🏃 @$masked active with ${String.format(Locale.getDefault(), "%,d", user.steps).replace(',', '.')} steps!"
+                                }
+
+                            val liveSegment = if (firestoreActiveUsers.isNotBlank()) "  •  $firestoreActiveUsers" else "  •  🏃 @S**** earned +150 Coins from Walking!"
+
+                            "      💰 Your Coins: $formattedCoins (≈ $$usdVal USD)  •  ⚡ Exchange Rate: $1.00 USD = 100,000 Coins  •  🎉 @$maskedUser active with $formattedCoins Coins!$liveSegment  •  💵 @B**** just cashed out $5.00 via PayPal!  •  🎁 Complete Daily Tasks & Offers for up to 50,000 Coins!  •  👟 Keep walking to convert steps into real cash rewards!      "
                         }
 
                         Text(
@@ -381,6 +398,80 @@ fun HomeScreen(
                         onClick = { onNavigate(Screen.Statistics) },
                         modifier = Modifier.weight(1f)
                     )
+                }
+
+                // Water Reminder Card
+                val todayStr = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(java.util.Date())
+                var currentGlasses = userProfile?.waterGlasses ?: 0
+                if (userProfile?.lastWaterResetDate != todayStr) {
+                    currentGlasses = 0
+                }
+                
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(1.dp, Color(0xFF03A9F4).copy(alpha = 0.3f), RoundedCornerShape(18.dp)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE1F5FE)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("💧", fontSize = 32.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Hydration Challenge",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0277BD)
+                                )
+                                Text(
+                                    text = "$currentGlasses / 8 glasses today",
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF0288D1)
+                                )
+                            }
+                        }
+                        
+                        val activity = context as? Activity
+                        
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                if (activity != null) {
+                                    AdManager.showRewardedAd(
+                                        activity = activity,
+                                        onRewardEarned = {
+                                            viewModel.drinkWater()
+                                            android.widget.Toast.makeText(context, "Water logged! (${currentGlasses + 1}/8 glasses)", android.widget.Toast.LENGTH_SHORT).show()
+                                        },
+                                        onFailed = {
+                                            viewModel.drinkWater()
+                                            android.widget.Toast.makeText(context, "Water logged! (${currentGlasses + 1}/8 glasses)", android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                } else {
+                                    viewModel.drinkWater()
+                                    android.widget.Toast.makeText(context, "Water logged! (${currentGlasses + 1}/8 glasses)", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            enabled = currentGlasses < 8,
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF03A9F4),
+                                disabledContainerColor = BorderLight
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp)
+                        ) {
+                            Text(if (currentGlasses >= 8) "Done ✓" else "+ Drink", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
 
                 // Ad Banner Card

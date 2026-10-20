@@ -66,10 +66,10 @@ fun RewardsScreen(
     val categoryCash = stringResource(R.string.category_cash)
 
     val rewardsList = listOf(
-        RewardItem("1", "PayPal $1", 10000, categoryCash, "", R.drawable.paypal),
-        RewardItem("2", "PayPal $5", 50000, categoryCash, "", R.drawable.paypal),
-        RewardItem("3", "PayPal $10", 100000, categoryCash, "", R.drawable.paypal),
-        RewardItem("4", "PayPal $20", 200000, categoryCash, "", R.drawable.paypal)
+        RewardItem("1", "PayPal $1", 100000, categoryCash, "", R.drawable.paypal),
+        RewardItem("2", "PayPal $5", 500000, categoryCash, "", R.drawable.paypal),
+        RewardItem("3", "PayPal $10", 1000000, categoryCash, "", R.drawable.paypal),
+        RewardItem("4", "PayPal $20", 2000000, categoryCash, "", R.drawable.paypal)
     )
 
     Scaffold(

@@ -18,5 +18,10 @@ data class UserProfileEntity(
     val rupiahBalance: Int = 0,
     val paymentMethod: String = "PayPal",
     val paymentAccount: String = "",
-    val checksum: String = ""
+    val checksum: String = "",
+    val referralCode: String = "",
+    val referredBy: String = "",
+    val shoeLevel: Int = 1,
+    val waterGlasses: Int = 0,
+    val lastWaterResetDate: String = ""
 )

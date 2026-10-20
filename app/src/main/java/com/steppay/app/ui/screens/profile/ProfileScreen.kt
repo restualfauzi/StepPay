@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -170,8 +172,40 @@ fun ProfileScreen(
                         color = PrimaryText,
                         letterSpacing = (-0.4).sp
                     )
+                    
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { onNavigate(Screen.Achievements) },
+                            modifier = Modifier.height(36.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                        ) {
+                            Text(
+                                text = "🏆 Achievements",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SurfaceWhite
+                            )
+                        }
+                        
+                        Button(
+                            onClick = { onNavigate(Screen.Sneakers) },
+                            modifier = Modifier.height(36.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                        ) {
+                            Text(
+                                text = "👟 Sneakers Lvl ${userProfile?.shoeLevel ?: 1}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SurfaceWhite
+                            )
+                        }
+                    }
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
                     val memberId = userProfile?.memberId ?: "SP12345678"
                     Box(
@@ -260,11 +294,11 @@ fun ProfileScreen(
 
                         Column {
                             Text(
-                                text = stringResource(R.string.total_coins).uppercase(),
+                                text = "TOTAL BALANCE (100,000 Coins = $1.00)",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = SecondaryText,
-                                letterSpacing = 1.sp
+                                letterSpacing = 0.5.sp
                             )
                             Text(
                                 text = String.format(Locale.getDefault(), "%,d", totalCoins).replace(',', '.'),
@@ -280,6 +314,68 @@ fun ProfileScreen(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
                         contentDescription = null,
                         tint = SecondaryText,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            
+            // Invite a Friend / Referral Card
+            val referralCode = userProfile?.referralCode ?: "SP-WAIT"
+            
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(1.dp, Color(0xFFFFD700).copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                    .clickable { onNavigate(Screen.InviteFriends) },
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDF0)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "🎁 Invite & Earn 10% Commission",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryText
+                        )
+                        Text(
+                            text = "Both get 10,000 Coins + 10% Lifetime Bonus!",
+                            fontSize = 12.sp,
+                            color = SecondaryText
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFFFD700).copy(alpha = 0.2f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Your Code: ",
+                                fontSize = 12.sp,
+                                color = PrimaryText
+                            )
+                            Text(
+                                text = referralCode,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlue
+                            )
+                        }
+                    }
+                    
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = "Open",
+                        tint = PrimaryBlue,
                         modifier = Modifier.size(16.dp)
                     )
                 }

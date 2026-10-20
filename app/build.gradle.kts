@@ -12,10 +12,10 @@ android {
 
     defaultConfig {
         applicationId = "com.steppay.app"
-        minSdk = 23
-        targetSdk = 35
-        versionCode = 1
-        versionName = "0.0.1"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 2
+        versionName = "0.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.osmdroid.android)
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
