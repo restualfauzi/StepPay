@@ -5,13 +5,12 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "withdrawals")
 data class WithdrawalEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val method: String, // e.g., "DANA"
+    @PrimaryKey
+    val transactionNumber: String,
+    val method: String,
     val accountNumber: String,
     val amountRupiah: Int,
     val coinCost: Int,
-    val status: String, // "Berhasil", "Menunggu", "Gagal"
-    val timestamp: Long = System.currentTimeMillis(),
-    val transactionNumber: String
+    val status: String,
+    val timestamp: Long = System.currentTimeMillis()
 )

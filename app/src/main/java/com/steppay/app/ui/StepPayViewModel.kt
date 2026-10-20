@@ -2,6 +2,10 @@ package com.steppay.app.ui
 
 import android.app.Application
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -79,10 +83,59 @@ class StepPayViewModel(application: Application) : AndroidViewModel(application)
     private val _liveLeaderboard = MutableStateFlow<List<LeaderboardUser>>(emptyList())
     val liveLeaderboard: StateFlow<List<LeaderboardUser>> = _liveLeaderboard.asStateFlow()
 
+    private val connectivityManager = application.getSystemService(Application.CONNECTIVITY_SERVICE) as ConnectivityManager
+    private val _isNetworkAvailable = MutableStateFlow<Boolean>(true)
+    val isNetworkAvailable: StateFlow<Boolean> = _isNetworkAvailable.asStateFlow()
+
+    private val _isMaintenanceMode = MutableStateFlow<Boolean>(false)
+    val isMaintenanceMode: StateFlow<Boolean> = _isMaintenanceMode.asStateFlow()
+
+    private val _maintenanceMessage = MutableStateFlow<String>("StepPay is currently under scheduled maintenance. We will be back shortly!")
+    val maintenanceMessage: StateFlow<String> = _maintenanceMessage.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow<Boolean>(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
     private var leaderboardListener: ListenerRegistration? = null
+    private var appConfigListener: ListenerRegistration? = null
+
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            _isNetworkAvailable.value = true
+        }
+
+        override fun onLost(network: Network) {
+            _isNetworkAvailable.value = false
+        }
+    }
 
     init {
         startLeaderboardSync()
+        startAppConfigSync()
+        registerNetworkMonitoring()
+    }
+
+    private fun registerNetworkMonitoring() {
+        try {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            connectivityManager.registerNetworkCallback(request, networkCallback)
+
+            val activeNetwork = connectivityManager.activeNetwork
+            val caps = connectivityManager.getNetworkCapabilities(activeNetwork)
+            _isNetworkAvailable.value = caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startAppConfigSync() {
+        appConfigListener?.remove()
+        appConfigListener = FirestoreSyncManager.listenToAppConfig { isMaintenance, message ->
+            _isMaintenanceMode.value = isMaintenance
+            _maintenanceMessage.value = message
+        }
     }
 
     fun startLeaderboardSync() {
@@ -209,9 +262,47 @@ class StepPayViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun deleteAccount(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            userPreferences.setOnboardingCompleted(false)
+            repository.deleteAccountAndClearData()
+            onComplete()
+        }
+    }
+
+    fun refreshData(onComplete: () -> Unit = {}) {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            try {
+                val profile = userProfile.value
+                if (profile != null && profile.email.isNotBlank()) {
+                    val remoteProfile = FirestoreSyncManager.fetchUserProfile(profile.email)
+                    if (remoteProfile != null) {
+                        repository.updateProfileFromRemote(remoteProfile)
+                    }
+                    val remoteTxs = FirestoreSyncManager.fetchTransactions(profile.email)
+                    repository.syncRemoteTransactions(remoteTxs)
+
+                    val remoteWithdrawals = FirestoreSyncManager.fetchWithdrawals(profile.email)
+                    repository.syncRemoteWithdrawals(remoteWithdrawals)
+                }
+                startLeaderboardSync()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isRefreshing.value = false
+                onComplete()
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         leaderboardListener?.remove()
+        appConfigListener?.remove()
+        try {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
+        } catch (_: Exception) {}
     }
 
     fun setSelectedCountry(countryCode: String) {

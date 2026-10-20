@@ -67,7 +67,7 @@ fun InfoScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "StepPay v0.0.1 (Early Access)",
+                text = "StepPay v0.0.3",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryText
@@ -88,34 +88,34 @@ fun InfoScreen(
                 content = "StepPay uses your smartphone's built-in hardware pedometer sensors and GPS location to accurately record your daily walking and running activity in real time.\n\nEvery step you take brings you closer to earning virtual coins, which can be redeemed for real PayPal cash rewards!"
             )
 
-            // Section 2: Progressive Step Milestones
+            // Section 2: Progressive Step Milestones & Exchange Rate
             HelpGuideCard(
                 title = "⚡ Progressive Step Goals & Exchange Rate",
-                content = "• Official Exchange Rate: $1.00 USD = 10,000 Coins\n• Progressive Step Goals: Daily step rewards scale progressively across 7 levels starting from 50 steps up to 10,000 steps (50 -> 200 -> 500 -> 1,000 -> 2,500 -> 5,000 -> 10,000 steps).\n• 2x Double Rewards: Each step goal offers an optional 2x double coin boost via short rewarded video ads!\n• Active Tracking: Start a workout session in the Activity tab for GPS route mapping and real-time exercise stats."
+                content = "• Official Exchange Rate: $1.00 USD = 100,000 Coins\n• Progressive Step Goals: Daily step rewards scale progressively across 7 levels starting from 50 steps up to 10,000 steps (50 -> 200 -> 500 -> 1,000 -> 2,500 -> 5,000 -> 10,000 steps).\n• 2x Double Rewards: Each step goal offers an optional 2x double coin boost via short rewarded video ads!\n• Active Workout Tracking: Start a workout session in the Activity tab for GPS route mapping, speed, distance, and real-time exercise stats."
             )
 
-            // Section 3: Earning Extra Coins (Bonus Center)
+            // Section 3: Gamification & Bonus Center
             HelpGuideCard(
-                title = "🎮 Bonus Center & Task Offers",
-                content = "Want to earn coins faster? Visit the Bonus tab to complete additional offers:\n• Rate 5 Stars on Play Store: Rate StepPay 5 stars to claim +500 Coins ($0.05 USD).\n• Tapjoy Games: Play top mobile games and earn up to 50,000 Coins ($5.00 USD).\n• BitLabs Surveys: Answer quick surveys matched to your profile.\n• Daily Tasks: Watch short video ads, check in daily, and spin the wheel for free bonus coins!"
+                title = "🎰 Gamification & Extra Ways to Earn",
+                content = "StepPay offers exciting gamified features to multiply your earnings:\n• Lucky Spin Wheel: Get 3 Free Daily Spins + 10 Extra Ad Spins daily with sound effects to win up to +1,000 Coins per spin.\n• Virtual Sneakers Upgrade: Upgrade your sneakers from Level 1 to Level 5 to boost your step coin earnings by up to +25%!\n• Hydration Tracker: Log 8 glasses of water daily to claim a +500 Coins bonus.\n• Achievements & Badges: Unlock 5 unique milestone badges to claim instant coin bonuses.\n• Rate 5 Stars on Play Store: Rate StepPay 5 stars to claim +500 Coins.\n• Tapjoy & BitLabs Offerwalls: Play mobile games and answer surveys to earn thousands of coins!"
             )
 
-            // Section 4: PayPal Payout Tiers & Anti-Fraud Mission
+            // Section 4: Referral & 10% Commission System
+            HelpGuideCard(
+                title = "👥 Invite Friends & 10% Lifetime Commission",
+                content = "Invite your friends to join StepPay using your unique referral code:\n• Both you and your friend receive +10,000 Coins instantly when they sign up with your code.\n• You automatically earn 10% lifetime commission on all coins earned by friends you invited!\n• Share your link directly to WhatsApp, Instagram, or social media using the Invite Friends screen."
+            )
+
+            // Section 5: PayPal Cash Out & Anti-Fraud Mission
             HelpGuideCard(
                 title = "💳 PayPal Cash Out & 7-Day Verification",
-                content = "You can request cash payouts directly to your registered PayPal account from the Rewards or Request Payout screen:\n• $1.00 PayPal Cash = 10,000 Coins\n• $5.00 PayPal Cash = 50,000 Coins\n• $10.00 PayPal Cash = 100,000 Coins\n• $20.00 PayPal Cash = 200,000 Coins\n\n🛡️ Anti-Fraud Requirement: To prevent fake/bot accounts, all payout requests require a 7-Day Daily Login Verification before cash is transferred to your PayPal."
+                content = "Redeem your coins directly for PayPal cash rewards from the Rewards screen:\n• $1.00 PayPal Cash = 100,000 Coins\n• $5.00 PayPal Cash = 500,000 Coins\n• $10.00 PayPal Cash = 1,000,000 Coins\n• $20.00 PayPal Cash = 2,000,000 Coins\n\n🛡️ Anti-Fraud Requirement: To prevent fake accounts, all payout requests require a 7-Day Daily Login Verification before cash is transferred to your PayPal email."
             )
 
-            // Section 5: Anti-Cheat & Fair Play Policy
+            // Section 6: Anti-Cheat, Data Safety & Account Rights
             HelpGuideCard(
-                title = "🛡️ Anti-Cheat & Fair Play Rules",
-                content = "To keep StepPay fair for all users:\n• Automated phone shakers, fake GPS apps, VPNs/proxies, emulators, or step simulators are strictly forbidden.\n• Each physical user is limited to one account per device.\n• Accounts violating fair play rules will be permanently suspended and forfeit all coins."
-            )
-
-            // Section 6: Frequently Asked Questions (FAQ)
-            HelpGuideCard(
-                title = "❓ Frequently Asked Questions (FAQ)",
-                content = "Q: Why aren't my steps counting?\nA: Ensure Physical Activity and Location permissions are enabled in your device settings, and turn off Battery Saver for StepPay.\n\nQ: How do progressive step goals work?\nA: Start by claiming your first 50 steps goal. Once claimed, the target automatically advances to 200 steps, then 500, 1k, 2.5k, 5k, and 10k steps!\n\nQ: What is the 7-day login requirement?\nA: After requesting a payout, simply open and log into StepPay daily for 7 days to verify your account. Your payout will be released automatically upon verification.\n\nQ: Is StepPay completely free?\nA: Yes! StepPay is 100% free to use. You never need to pay anything to earn rewards."
+                title = "🛡️ Anti-Cheat & Account Deletion Rights",
+                content = "• Fair Play: Phone shakers, fake GPS apps, emulators, or VPNs/proxies are strictly forbidden. Violators forfeit all coins.\n• Real-Time Firestore Sync: All user data and transactions are safely stored in Firebase Firestore.\n• Delete Account Right: You can permanently erase your account and all associated Firestore data at any time using the 'Delete Account' option in Settings or Profile."
             )
 
             // Section 7: Customer Support Contact

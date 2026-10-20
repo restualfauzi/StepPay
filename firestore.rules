@@ -2,49 +2,40 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper Functions
-    function isSignedIn() {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && (request.auth.uid == userId || request.auth.token.email == userId);
-    }
-
-    // Users Collection
+    // 1. User Profile Collection (Stores Profile, Coins, Steps, Referral, Sneakers, Water)
     match /users/{userId} {
-      allow read: if true;
-      allow create, update: if true;
-      allow delete: if false;
+      allow read, write: if isAuthenticated();
     }
 
-    // Live Leaderboard Collection
+    // 2. Live Leaderboard Collection (Real-time Global Rankings)
     match /leaderboard/{userId} {
-      allow read: if true;
-      allow create, update: if true;
-      allow delete: if false;
+      allow read, write: if isAuthenticated();
     }
 
-    // Activity Sessions Collection
-    match /activity_sessions/{sessionId} {
-      allow read: if true;
-      allow create, update: if true;
-      allow delete: if false;
+    // 3. Coin Transactions Collection (All Earned & Spent Coin Logs)
+    match /coin_transactions/{txId} {
+      allow read, create, update, delete: if isAuthenticated();
     }
 
-    // Coin Transactions Collection (Immutable)
-    match /coin_transactions/{transactionId} {
-      allow read: if true;
-      allow create: if true;
-      allow update, delete: if false;
-    }
-
-    // Withdrawals / Payout Requests Collection
+    // 4. Withdrawal Payout Requests Collection (PayPal Cashout Logs)
     match /withdrawals/{withdrawalId} {
-      allow read: if true;
-      allow create: if true;
-      allow update: if true;
-      allow delete: if false;
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    // 5. Activity Tracking Sessions Collection (GPS Workouts, Steps, Distance)
+    match /activity_sessions/{sessionId} {
+      allow read, create, update, delete: if isAuthenticated();
+    }
+
+    // 6. Remote App Configuration (Maintenance Mode & Remote Control)
+    match /app_config/settings {
+      allow read: if true; // Public read so app can check maintenance status even before login
+      allow write: if false; // Only editable directly from Firebase Admin Console
     }
   }
 }

@@ -132,6 +132,64 @@ object FirestoreSyncManager {
         }
     }
 
+    suspend fun fetchWithdrawals(email: String): List<WithdrawalEntity> {
+        if (email.isBlank()) return emptyList()
+        return try {
+            val snapshot = firestore.collection("withdrawals")
+                .whereEqualTo("userId", email)
+                .get()
+                .awaitTask()
+            snapshot?.documents?.mapNotNull { doc ->
+                val method = doc.getString("method") ?: "PayPal"
+                val accountNumber = doc.getString("accountNumber") ?: ""
+                val amountRupiah = (doc.getLong("amountRupiah") ?: 0L).toInt()
+                val coinCost = (doc.getLong("coinCost") ?: 0L).toInt()
+                val status = doc.getString("status") ?: "Pending"
+                val transactionNumber = doc.getString("transactionNumber") ?: doc.id
+                val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
+                WithdrawalEntity(
+                    method = method,
+                    accountNumber = accountNumber,
+                    amountRupiah = amountRupiah,
+                    coinCost = coinCost,
+                    status = status,
+                    transactionNumber = transactionNumber,
+                    timestamp = timestamp
+                )
+            } ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    fun listenToWithdrawals(email: String, onWithdrawalsUpdated: (List<WithdrawalEntity>) -> Unit): ListenerRegistration? {
+        if (email.isBlank()) return null
+        return firestore.collection("withdrawals")
+            .whereEqualTo("userId", email)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+                val list = snapshot.documents.mapNotNull { doc ->
+                    val method = doc.getString("method") ?: "PayPal"
+                    val accountNumber = doc.getString("accountNumber") ?: ""
+                    val amountRupiah = (doc.getLong("amountRupiah") ?: 0L).toInt()
+                    val coinCost = (doc.getLong("coinCost") ?: 0L).toInt()
+                    val status = doc.getString("status") ?: "Pending"
+                    val transactionNumber = doc.getString("transactionNumber") ?: doc.id
+                    val timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis()
+                    WithdrawalEntity(
+                        method = method,
+                        accountNumber = accountNumber,
+                        amountRupiah = amountRupiah,
+                        coinCost = coinCost,
+                        status = status,
+                        transactionNumber = transactionNumber,
+                        timestamp = timestamp
+                    )
+                }
+                onWithdrawalsUpdated(list)
+            }
+    }
+
     fun syncUserProfile(profile: UserProfileEntity) {
         val userId = profile.email.ifBlank { profile.memberId }
         if (userId.isBlank()) return
@@ -234,6 +292,42 @@ object FirestoreSyncManager {
             .set(withdrawalMap, SetOptions.merge())
     }
 
+    suspend fun deleteAllUserDataFromFirestore(email: String, memberId: String) {
+        val userKey = email.ifBlank { memberId }
+        if (userKey.isBlank()) return
+
+        try {
+            // 1. Delete user document from users collection
+            firestore.collection("users").document(userKey).delete().awaitTask()
+
+            // 2. Delete user document from leaderboard collection
+            firestore.collection("leaderboard").document(userKey).delete().awaitTask()
+
+            // 3. Delete transactions associated with user
+            val txSnap = firestore.collection("coin_transactions")
+                .whereEqualTo("userId", userKey)
+                .get()
+                .awaitTask()
+            txSnap?.documents?.forEach { doc -> doc.reference.delete() }
+
+            // 4. Delete withdrawals associated with user
+            val wSnap = firestore.collection("withdrawals")
+                .whereEqualTo("userId", userKey)
+                .get()
+                .awaitTask()
+            wSnap?.documents?.forEach { doc -> doc.reference.delete() }
+
+            // 5. Delete activity sessions associated with user
+            val actSnap = firestore.collection("activity_sessions")
+                .whereEqualTo("userId", userKey)
+                .get()
+                .awaitTask()
+            actSnap?.documents?.forEach { doc -> doc.reference.delete() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     fun listenToLiveLeaderboard(onLeaderboardUpdated: (List<LeaderboardUserDto>) -> Unit): ListenerRegistration {
         return firestore.collection("users")
             .addSnapshotListener { snapshot, error ->
@@ -251,6 +345,17 @@ object FirestoreSyncManager {
                     )
                 }
                 onLeaderboardUpdated(userList)
+            }
+    }
+
+    fun listenToAppConfig(onConfigUpdated: (Boolean, String) -> Unit): ListenerRegistration {
+        return firestore.collection("app_config")
+            .document("settings")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null || !snapshot.exists()) return@addSnapshotListener
+                val isMaintenance = snapshot.getBoolean("isMaintenance") ?: false
+                val message = snapshot.getString("maintenanceMessage") ?: "StepPay is currently under scheduled maintenance. We will be back shortly!"
+                onConfigUpdated(isMaintenance, message)
             }
     }
 }

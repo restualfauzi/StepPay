@@ -1,5 +1,6 @@
 package com.steppay.app.ui.screens.history
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,8 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.steppay.app.R
@@ -48,6 +52,7 @@ import com.steppay.app.ui.map.StepPayMapView
 import com.steppay.app.ui.navigation.Screen
 import com.steppay.app.ui.theme.BackgroundLight
 import com.steppay.app.ui.theme.BorderLight
+import com.steppay.app.ui.theme.DangerRed
 import com.steppay.app.ui.theme.PrimaryBlue
 import com.steppay.app.ui.theme.PrimaryText
 import com.steppay.app.ui.theme.SecondaryText
@@ -132,51 +137,62 @@ fun HistoryScreen(
                 }
             }
 
+            val isRefreshing by viewModel.isRefreshing.collectAsState()
+
+            val uniqueTransactions = remember(transactions) { transactions.distinctBy { "${it.title}_${it.timestamp}" } }
+            val uniqueWithdrawals = remember(withdrawals) { withdrawals.distinctBy { it.transactionNumber } }
+
             // Tab Content
-            when (selectedTab) {
-                0 -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        contentPadding = PaddingValues(vertical = 12.dp)
-                    ) {
-                        items(transactions) { trx ->
-                            TransactionItem(transaction = trx)
-                            HorizontalDivider(
-                                color = BorderLight,
-                                thickness = 0.5.dp,
-                                modifier = Modifier.padding(vertical = 2.dp)
-                            )
+            com.steppay.app.ui.components.SwipeToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refreshData() },
+                modifier = Modifier.weight(1f)
+            ) {
+                when (selectedTab) {
+                    0 -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp)
+                        ) {
+                            items(uniqueTransactions) { trx ->
+                                TransactionItem(transaction = trx)
+                                HorizontalDivider(
+                                    color = BorderLight,
+                                    thickness = 0.5.dp,
+                                    modifier = Modifier.padding(vertical = 2.dp)
+                                )
+                            }
                         }
                     }
-                }
-                1 -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        items(withdrawals) { withdrawal ->
-                            WithdrawalHistoryItem(withdrawal = withdrawal)
+                    1 -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            items(uniqueWithdrawals) { withdrawal ->
+                                WithdrawalHistoryItem(withdrawal = withdrawal)
+                            }
                         }
                     }
-                }
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        items(sessions) { session ->
-                            ActivitySessionHistoryItem(
-                                session = session,
-                                viewModel = viewModel
-                            )
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp),
+                            contentPadding = PaddingValues(vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            items(sessions) { session ->
+                                ActivitySessionHistoryItem(
+                                    session = session,
+                                    viewModel = viewModel
+                                )
+                            }
                         }
                     }
                 }
@@ -326,6 +342,35 @@ fun WithdrawalHistoryItem(
     withdrawal: WithdrawalEntity,
     modifier: Modifier = Modifier
 ) {
+    val statusLower = withdrawal.status.lowercase(Locale.getDefault())
+    val isPaid = statusLower.contains("paid") ||
+                 statusLower.contains("sukses") ||
+                 statusLower.contains("success") ||
+                 statusLower.contains("berhasil") ||
+                 statusLower.contains("approved")
+    val isFailed = statusLower.contains("gagal") || statusLower.contains("fail") || statusLower.contains("reject")
+
+    val displayStatus = when {
+        isPaid -> "Paid"
+        isFailed -> "Failed"
+        withdrawal.status.contains("1/7") -> "Pending (1/7 Days)"
+        withdrawal.status.contains("7-Day") -> "Pending Verification"
+        else -> "Pending"
+    }
+
+    val (statusBg, statusColor) = when {
+        isPaid -> Pair(SoftGreenBg, SuccessGreen)
+        isFailed -> Pair(SoftPinkBg, DangerRed)
+        else -> Pair(com.steppay.app.ui.theme.SoftGoldBg, WarningOrange)
+    }
+
+    val displayDollars = when {
+        withdrawal.amountRupiah >= 100000 -> withdrawal.amountRupiah / 100000
+        withdrawal.coinCost >= 100000 -> withdrawal.coinCost / 100000
+        withdrawal.amountRupiah >= 1000 -> withdrawal.amountRupiah / 1000
+        else -> withdrawal.amountRupiah
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -336,71 +381,76 @@ fun WithdrawalHistoryItem(
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Payout ${withdrawal.method}",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = PrimaryText,
-                        letterSpacing = (-0.3).sp
+                // Left: PayPal Logo + Title + Email
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.paypal),
+                        contentDescription = "PayPal",
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(8.dp))
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "• ${withdrawal.accountNumber}",
-                        fontSize = 12.sp,
-                        color = SecondaryText
-                    )
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Payout ${withdrawal.method}",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryText
+                        )
+                        Text(
+                            text = withdrawal.accountNumber,
+                            fontSize = 12.sp,
+                            color = SecondaryText,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
 
-                // Status Badge
-                val isPaid = withdrawal.status == "Paid" || withdrawal.status == "Berhasil"
-                val is7DayVerification = withdrawal.status.contains("7-Day") || withdrawal.status.contains("Pending")
-                
-                val displayStatus = when {
-                    isPaid -> "Paid"
-                    is7DayVerification -> withdrawal.status
-                    withdrawal.status == "Gagal" -> "Failed"
-                    else -> "Processing"
-                }
+                Spacer(modifier = Modifier.width(8.dp))
 
-                val (statusBg, statusColor) = when {
-                    isPaid -> Pair(SoftGreenBg, SuccessGreen)
-                    is7DayVerification -> Pair(com.steppay.app.ui.theme.SoftGoldBg, WarningOrange)
-                    else -> Pair(SoftPinkBg, SecondaryText)
-                }
-
+                // Right: Status Badge (Pill Shape - No Vertical Oval Distortion)
                 Box(
                     modifier = Modifier
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(8.dp))
                         .background(statusBg)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
                 ) {
                     Text(
                         text = displayStatus,
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = statusColor
+                        fontWeight = FontWeight.Bold,
+                        color = statusColor,
+                        maxLines = 1
                     )
                 }
             }
 
+            HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
+
+            // Bottom Section: Dollar Amount & Coin Cost
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    val displayDollars = if (withdrawal.amountRupiah >= 1000) withdrawal.amountRupiah / 1000 else withdrawal.amountRupiah
                     Text(
                         text = "$$displayDollars.00",
-                        fontSize = 18.sp,
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlue
                     )
@@ -412,10 +462,10 @@ fun WithdrawalHistoryItem(
                 }
 
                 Text(
-                    text = "- ${String.format(Locale.getDefault(), "%,d", withdrawal.coinCost)} coins",
+                    text = "- ${String.format(Locale.getDefault(), "%,d", withdrawal.coinCost).replace(',', '.')} coins",
                     fontSize = 13.sp,
                     color = SecondaryText,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }

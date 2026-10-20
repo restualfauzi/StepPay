@@ -21,4 +21,7 @@ interface ActivityDao {
 
     @Query("SELECT * FROM activity_sessions ORDER BY timestamp DESC LIMIT 10")
     fun getRecentSessions(): Flow<List<ActivitySessionEntity>>
+
+    @Query("DELETE FROM activity_sessions")
+    suspend fun deleteAllSessions()
 }

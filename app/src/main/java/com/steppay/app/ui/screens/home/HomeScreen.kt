@@ -100,6 +100,8 @@ fun HomeScreen(
         label = "stepsAnimation"
     )
 
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+
     Scaffold(
         bottomBar = {
             BottomNavigationBar(
@@ -109,12 +111,16 @@ fun HomeScreen(
         },
         containerColor = BackgroundLight
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
+        com.steppay.app.ui.components.SwipeToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshData() },
+            modifier = Modifier.padding(paddingValues)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -509,6 +515,7 @@ fun HomeScreen(
             }
         }
     }
+}
 }
 
 @Composable

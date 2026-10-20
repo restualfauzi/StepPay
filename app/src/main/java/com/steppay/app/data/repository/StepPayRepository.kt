@@ -34,6 +34,11 @@ class StepPayRepository(context: Context) {
                         userProfileDao.insertOrUpdateProfile(updatedFromFirestore.copy(checksum = newChecksum))
                     }
                 }
+                FirestoreSyncManager.listenToWithdrawals(profile.email) { updatedWithdrawals ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        updatedWithdrawals.forEach { withdrawalDao.insertWithdrawal(it) }
+                    }
+                }
             }
         }
     }
@@ -239,6 +244,29 @@ class StepPayRepository(context: Context) {
         }
     }
 
+    suspend fun deleteAccountAndClearData() {
+        val currentProfile = userProfileDao.getUserProfile().first()
+        val email = currentProfile?.email ?: ""
+        val memberId = currentProfile?.memberId ?: ""
+
+        // 1. Delete all user data from Firestore
+        FirestoreSyncManager.deleteAllUserDataFromFirestore(email, memberId)
+
+        // 2. Clear all local Room database tables
+        userProfileDao.deleteProfile()
+        transactionDao.deleteAllTransactions()
+        withdrawalDao.deleteAllWithdrawals()
+        activityDao.deleteAllSessions()
+
+        // 3. Delete or Sign out from Firebase Auth
+        try {
+            com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+        }
+    }
+
     suspend fun processWithdrawal(
         method: String,
         accountNumber: String,
@@ -263,9 +291,10 @@ class StepPayRepository(context: Context) {
         )
         withdrawalDao.insertWithdrawal(withdrawal)
 
+        val displayDollars = if (amountRupiah >= 100000) amountRupiah / 100000 else if (amountRupiah >= 1000) amountRupiah / 1000 else amountRupiah
         val tx = CoinTransactionEntity(
             title = "Payout $method",
-            subtitle = "$$amountRupiah.00",
+            subtitle = "Redeemed $$displayDollars.00 Cash",
             amountCoins = coinCost,
             isPositive = false,
             category = "WITHDRAWAL"
@@ -332,6 +361,24 @@ class StepPayRepository(context: Context) {
             )
             userProfileDao.insertOrUpdateProfile(newProfile)
             FirestoreSyncManager.syncUserProfile(newProfile)
+        }
+    }
+
+    suspend fun updateProfileFromRemote(remoteProfile: UserProfileEntity) {
+        val newChecksum = SecurityManager.calculateCoinChecksum(remoteProfile.memberId, remoteProfile.totalCoins, remoteProfile.todaySteps)
+        val signed = remoteProfile.copy(checksum = newChecksum)
+        userProfileDao.insertOrUpdateProfile(signed)
+    }
+
+    suspend fun syncRemoteTransactions(transactions: List<CoinTransactionEntity>) {
+        transactions.forEach {
+            transactionDao.insertTransaction(it)
+        }
+    }
+
+    suspend fun syncRemoteWithdrawals(withdrawals: List<WithdrawalEntity>) {
+        withdrawals.forEach {
+            withdrawalDao.insertWithdrawal(it)
         }
     }
 }

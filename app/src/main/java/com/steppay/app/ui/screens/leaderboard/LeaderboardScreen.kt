@@ -103,6 +103,8 @@ fun LeaderboardScreen(
         }
     }
 
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+
     Scaffold(
         topBar = {
             StepPayTopBar(
@@ -113,13 +115,16 @@ fun LeaderboardScreen(
         },
         containerColor = BackgroundLight
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        com.steppay.app.ui.components.SwipeToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshData() },
+            modifier = Modifier.padding(paddingValues)
         ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
             // Podium Header
             item {
                 ElevatedCard(
@@ -188,6 +193,7 @@ fun LeaderboardScreen(
             }
         }
     }
+}
 }
 
 @Composable

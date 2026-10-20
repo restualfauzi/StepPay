@@ -168,6 +168,8 @@ fun BonusScreen(
     var showClaimDialog by remember { mutableStateOf<String?>(null) }
     var claimedCoinsAmount by remember { mutableStateOf(0) }
 
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+
     Scaffold(
         topBar = {
             StepPayTopBar(
@@ -183,14 +185,18 @@ fun BonusScreen(
         },
         containerColor = BackgroundLight
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+        com.steppay.app.ui.components.SwipeToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshData() },
+            modifier = Modifier.padding(paddingValues)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
             // Coin Balance Card
             CoinBalanceCard(
                 totalCoins = totalCoins,
@@ -1164,6 +1170,7 @@ fun BonusScreen(
             Spacer(modifier = Modifier.height(10.dp))
         }
     }
+}
 
     // MODAL BOTTOM SHEET FOR TAPJOY GAMES OFFERWALL
     if (showTapjoySheet) {

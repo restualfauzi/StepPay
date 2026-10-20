@@ -143,7 +143,7 @@ fun WithdrawalScreen(
                         )
                         
                         Text(
-                            text = "${String.format(Locale.getDefault(), "%,d", selectedAmount * 10000).replace(',', '.')} coins required",
+                            text = "${String.format(Locale.getDefault(), "%,d", selectedAmount * 100000).replace(',', '.')} coins required",
                             fontSize = 12.sp,
                             color = SecondaryText
                         )
@@ -302,7 +302,7 @@ fun WithdrawalScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text("Coin Cost:", fontSize = 13.sp, color = SecondaryText)
-                                Text("${String.format(Locale.getDefault(), "%,d", selectedAmount * 10000).replace(',', '.')} Coins", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
+                                Text("${String.format(Locale.getDefault(), "%,d", selectedAmount * 100000).replace(',', '.')} Coins", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
                             }
                         }
                     }
@@ -342,8 +342,8 @@ fun WithdrawalScreen(
                         viewModel.processWithdrawal(
                             method = "PayPal",
                             accountNumber = accountNum,
-                            amountRupiah = selectedAmount * 10000,
-                            coinCost = selectedAmount * 10000,
+                            amountRupiah = selectedAmount * 100000,
+                            coinCost = selectedAmount * 100000,
                             onSuccess = onSuccess
                         )
                     },

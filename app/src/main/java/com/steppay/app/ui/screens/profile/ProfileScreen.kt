@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.InsertChartOutlined
 import androidx.compose.material.icons.filled.PrivacyTip
@@ -98,6 +99,8 @@ fun ProfileScreen(
     var showTargetDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
 
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+
     Scaffold(
         topBar = {
             StepPayTopBar(
@@ -113,14 +116,18 @@ fun ProfileScreen(
         },
         containerColor = BackgroundLight
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        com.steppay.app.ui.components.SwipeToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { viewModel.refreshData() },
+            modifier = Modifier.padding(paddingValues)
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             // Clean iOS Header User Profile Card
             Card(
                 modifier = Modifier
@@ -462,7 +469,9 @@ fun ProfileScreen(
                 )
             )
 
-            // Logout Section
+            // Logout & Account Action Section
+            var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
             ProfileSectionGroup(
                 title = "ACCOUNT ACTION",
                 items = listOf(
@@ -472,13 +481,53 @@ fun ProfileScreen(
                         icon = Icons.AutoMirrored.Filled.ExitToApp,
                         onClick = { showLogoutDialog = true },
                         isDestructive = true
+                    ),
+                    ProfileGroupItemData(
+                        title = "Delete Account",
+                        subtitle = "Permanently remove account & all Firestore data",
+                        icon = Icons.Default.Delete,
+                        onClick = { showDeleteAccountDialog = true },
+                        isDestructive = true
                     )
                 )
             )
 
+            if (showDeleteAccountDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showDeleteAccountDialog = false },
+                    containerColor = SurfaceWhite,
+                    title = {
+                        Text("Delete Account Permanently?", fontWeight = FontWeight.Bold, color = Color(0xFFD32F2F))
+                    },
+                    text = {
+                        Text("This action CANNOT be undone. All your profile data, step records, coin balance, and transactions in Firebase Firestore will be erased permanently.", color = SecondaryText)
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showDeleteAccountDialog = false
+                                android.widget.Toast.makeText(context, "Deleting account & data from Firestore...", android.widget.Toast.LENGTH_LONG).show()
+                                viewModel.deleteAccount {
+                                    // Callback after deletion complete
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                        ) {
+                            Text("Delete Permanently", color = SurfaceWhite, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(onClick = { showDeleteAccountDialog = false }) {
+                            Text("Cancel", color = SecondaryText)
+                        }
+                    }
+                )
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
 
     // LOGOUT CONFIRMATION DIALOG
     if (showLogoutDialog) {

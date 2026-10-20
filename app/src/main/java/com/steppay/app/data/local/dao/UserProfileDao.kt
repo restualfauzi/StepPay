@@ -33,4 +33,7 @@ interface UserProfileDao {
 
     @Query("UPDATE user_profile SET name = :name, email = :email, photoUrl = :photoUrl, paymentAccount = :email WHERE id = 1")
     suspend fun updateGoogleProfile(name: String, email: String, photoUrl: String): Int
+
+    @Query("DELETE FROM user_profile")
+    suspend fun deleteProfile()
 }

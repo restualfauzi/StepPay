@@ -226,6 +226,81 @@ fun SettingsScreen(
                     onBackClick()
                 }
             )
+
+            // Section 3: Danger Zone / Delete Account
+            var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp)),
+                colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color(0xFFFFEBEE)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Danger Zone",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = androidx.compose.ui.graphics.Color(0xFFD32F2F)
+                    )
+                    Text(
+                        text = "Permanently delete your account and remove all your data from Firebase Firestore & local storage.",
+                        fontSize = 13.sp,
+                        color = SecondaryText
+                    )
+                    
+                    androidx.compose.material3.Button(
+                        onClick = { showDeleteAccountDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = androidx.compose.ui.graphics.Color(0xFFD32F2F)
+                        )
+                    ) {
+                        Text("Delete Account & Clear All Data", color = SurfaceWhite, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            if (showDeleteAccountDialog) {
+                androidx.compose.material3.AlertDialog(
+                    onDismissRequest = { showDeleteAccountDialog = false },
+                    containerColor = SurfaceWhite,
+                    title = {
+                        Text("Delete Account Permanently?", fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color(0xFFD32F2F))
+                    },
+                    text = {
+                        Text("This action CANNOT be undone. All your profile data, step records, coin balance, and transactions in Firebase Firestore will be erased permanently.", color = SecondaryText)
+                    },
+                    confirmButton = {
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                showDeleteAccountDialog = false
+                                Toast.makeText(context, "Deleting account & data from Firestore...", Toast.LENGTH_LONG).show()
+                                viewModel.deleteAccount {
+                                    // Callback after deletion complete
+                                }
+                            },
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = androidx.compose.ui.graphics.Color(0xFFD32F2F)
+                            )
+                        ) {
+                            Text("Delete Permanently", color = SurfaceWhite, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        androidx.compose.material3.TextButton(onClick = { showDeleteAccountDialog = false }) {
+                            Text("Cancel", color = SecondaryText)
+                        }
+                    }
+                )
+            }
         }
     }
 }

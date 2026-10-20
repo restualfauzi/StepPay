@@ -5,16 +5,21 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.steppay.app.ui.StepPayViewModel
+import com.steppay.app.ui.components.MaintenanceOverlay
+import com.steppay.app.ui.components.NoInternetOverlay
 import com.steppay.app.ui.components.RewardItem
 import com.steppay.app.ui.screens.activity.ActivityTrackingScreen
 import com.steppay.app.ui.screens.bonus.BonusScreen
@@ -38,11 +43,18 @@ fun StepPayNavHost(
     viewModel: StepPayViewModel
 ) {
     val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
+    val isNetworkAvailable by viewModel.isNetworkAvailable.collectAsState()
+    val isMaintenanceMode by viewModel.isMaintenanceMode.collectAsState()
+    val maintenanceMessage by viewModel.maintenanceMessage.collectAsState()
+
     var selectedRewardItem by remember { mutableStateOf<RewardItem?>(null) }
 
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Splash.route,
+    androidx.compose.foundation.layout.Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Splash.route,
         enterTransition = {
             slideInHorizontally(
                 initialOffsetX = { it },
@@ -280,6 +292,16 @@ fun StepPayNavHost(
                     navController.popBackStack()
                 }
             )
+        }
+        }
+
+        // 1. If Maintenance Mode is enabled in Firestore -> Render Maintenance Overlay
+        if (isMaintenanceMode) {
+            MaintenanceOverlay(message = maintenanceMessage)
+        }
+        // 2. If Internet Connection is Lost -> Render No Internet Overlay (Spinning Wheel)
+        else if (!isNetworkAvailable) {
+            NoInternetOverlay()
         }
     }
 }

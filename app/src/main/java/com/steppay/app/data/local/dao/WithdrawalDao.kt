@@ -18,4 +18,7 @@ interface WithdrawalDao {
 
     @Query("SELECT COUNT(*) FROM withdrawals")
     suspend fun getWithdrawalCount(): Int
+
+    @Query("DELETE FROM withdrawals")
+    suspend fun deleteAllWithdrawals()
 }
